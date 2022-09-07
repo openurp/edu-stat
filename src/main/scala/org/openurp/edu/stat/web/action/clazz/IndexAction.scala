@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005, The OpenURP Software.
+ * Copyright (C) 2014, The OpenURP Software.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published
@@ -21,7 +21,8 @@ import org.beangle.data.dao.OqlBuilder
 import org.beangle.data.model.Entity
 import org.beangle.web.action.view.View
 import org.beangle.webmvc.support.action.EntityAction
-import org.openurp.base.edu.model.{Semester, Teacher}
+import org.openurp.base.edu.model.Teacher
+import org.openurp.base.model.Semester
 import org.openurp.code.job.model.ProfessionalTitle
 import org.openurp.edu.clazz.model.{Clazz, CourseTaker}
 import org.openurp.starter.edu.helper.ProjectSupport

@@ -24,15 +24,15 @@ ThisBuild / developers := List(
 ThisBuild / description := "OpenURP Edu Stat"
 ThisBuild / homepage := Some(url("http://openurp.github.io/edu-stat/index.html"))
 
-val apiVer = "0.23.4"
-val starterVer = "0.0.14"
-val baseVer = "0.1.23"
+val apiVer = "0.26.0"
+val starterVer = "0.0.21"
+val baseVer = "0.1.30"
 val openurp_edu_api = "org.openurp.edu" % "openurp-edu-api" % apiVer
 val openurp_stater_web = "org.openurp.starter" % "openurp-starter-web" % starterVer
 val openurp_base_tag = "org.openurp.base" % "openurp-base-tag" % baseVer
 
 lazy val root = (project in file("."))
-  .enablePlugins(WarPlugin)
+  .enablePlugins(WarPlugin,TomcatPlugin)
   .settings(
     name := "openurp-edu-stat-webapp",
     common,

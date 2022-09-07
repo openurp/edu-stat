@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005, The OpenURP Software.
+ * Copyright (C) 2014, The OpenURP Software.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published
@@ -24,7 +24,8 @@ import org.beangle.data.transfer.exporter.ExportContext
 import org.beangle.web.action.annotation.{mapping, param}
 import org.beangle.web.action.view.View
 import org.beangle.webmvc.support.action.EntityAction
-import org.openurp.base.edu.model.{Project, Semester, Teacher}
+import org.openurp.base.edu.model.Teacher
+import org.openurp.base.model.{Project, Semester}
 import org.openurp.edu.clazz.model.{Clazz, Session}
 import org.openurp.edu.stat.web.helper.BirthdayLesson
 import org.openurp.starter.edu.helper.ProjectSupport
@@ -93,7 +94,6 @@ class BirthdayAction extends EntityAction[Clazz] with ProjectSupport {
     sessionQuery.where("s.clazz.project=:project and s.clazz.semester=:semester", p, semester)
     val sessions = entityDao.search(sessionQuery)
     val teacherSessions = sessions.map(x => x.teachers.map(t => t -> x)).flatten.groupMap(_._1)(_._2)
-
     teachers foreach { t =>
       teacherSessions.get(t) match {
         case Some(sessionList) =>
@@ -108,7 +108,7 @@ class BirthdayAction extends EntityAction[Clazz] with ProjectSupport {
           days foreach { day =>
             val wt = WeekTime.of(day)
             val daySessions = sessionList.filter { s =>
-              s.startOn == wt.startOn && s.time.weekstate.isOverlap(wt.weekstate)
+              s.time.startOn == wt.startOn && s.time.weekstate.isOverlap(wt.weekstate)
             }
             daySessions foreach { session =>
               lessons += BirthdayLesson(day, t, session)
