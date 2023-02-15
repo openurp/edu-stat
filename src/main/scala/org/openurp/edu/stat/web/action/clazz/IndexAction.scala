@@ -17,23 +17,27 @@
 
 package org.openurp.edu.stat.web.action.clazz
 
-import org.beangle.data.dao.OqlBuilder
+import org.beangle.data.dao.{EntityDao, OqlBuilder}
 import org.beangle.data.model.Entity
 import org.beangle.web.action.view.View
 import org.beangle.webmvc.support.action.EntityAction
 import org.openurp.base.edu.model.Teacher
-import org.openurp.base.model.Semester
+import org.openurp.base.model.{Project, Semester}
 import org.openurp.code.job.model.ProfessionalTitle
 import org.openurp.edu.clazz.model.{Clazz, CourseTaker}
-import org.openurp.starter.edu.helper.ProjectSupport
+import org.openurp.starter.web.support.ProjectSupport
 
 import scala.collection.mutable.Map
 
 class IndexAction extends EntityAction[Clazz] with ProjectSupport {
 
+  var entityDao: EntityDao = _
+
   def index(): View = {
-    put("project", getProject)
-    put("currentSemester", getCurrentSemester)
+    given project: Project = getProject
+
+    put("project", project)
+    put("currentSemester", getSemester)
     forward()
   }
 
@@ -140,17 +144,18 @@ class IndexAction extends EntityAction[Clazz] with ProjectSupport {
     semesterId match {
       case Some(value) => {
         val semester = entityDao.get(classOf[Semester], value)
-        query.where(s"exists (from ${classOf[Clazz].getName} c where c.semester = :semester and c.enrollment.actual >0 and exists (from c.teachers ct where ct = t))", semester)
+        query.where(s"exists (from ${classOf[Clazz].getName} c where c.semester = :semester" +
+          s" and c.enrollment.actual >0 and exists (from c.teachers ct where ct = t))", semester)
         put("semester", semester)
       }
       case None => query.where(s"exists (from ${classOf[Clazz].getName} c where exists (from c.teachers ct where ct = t))")
     }
-    query.where("t.title is not null")
+    query.where("t.staff.title is not null")
     query.select("count(*)")
     put("sum", entityDao.search(query))
-    query.groupBy("t.title.id, t.title.name")
-    query.orderBy("t.title.name")
-    query.select("t.title.name,count(*)")
+    query.groupBy("t.staff.title.id, t.staff.title.name")
+    query.orderBy("t.staff.title.name")
+    query.select("t.staff.title.name,count(*)")
     var rs = entityDao.search(query).asInstanceOf[Seq[Array[Any]]]
     rs = rs.sortBy(x => 0 - x(1).asInstanceOf[Long])
     put("titles", rs)
@@ -161,9 +166,9 @@ class IndexAction extends EntityAction[Clazz] with ProjectSupport {
     val query = OqlBuilder.from(classOf[Clazz].getName, "c")
     addCondition(query)
     query.join("c.teachers", "t")
-    query.groupBy("t.title.id, t.title.name")
-    query.orderBy("t.title.name")
-    query.select(s"t.title.name,count(c.id),avg(c.course.creditHours)")
+    query.groupBy("t.staff.title.id, t.staff.title.name")
+    query.orderBy("t.staff.title.name")
+    query.select(s"t.staff.title.name,count(c.id),avg(c.course.creditHours)")
     var rs = entityDao.search(query).asInstanceOf[Seq[Array[Any]]]
     rs = rs.sortBy(x => 0 - x(1).asInstanceOf[Long])
     put("titles", rs)
@@ -172,7 +177,7 @@ class IndexAction extends EntityAction[Clazz] with ProjectSupport {
 
   def topN(): View = {
     val query1 = OqlBuilder.from[ProfessionalTitle](classOf[ProfessionalTitle].getName, "pt")
-    query1.where(s"exists (from ${classOf[Teacher].getName} t where t.title = pt and " +
+    query1.where(s"exists (from ${classOf[Teacher].getName} t where t.staff.title = pt and " +
       s"exists (from ${classOf[Clazz].getName} c where c.enrollment.actual>0 and exists (from c.teachers ct where ct = t)))")
     val titles = entityDao.search(query1)
     val titlesMap = Map[Int, ProfessionalTitle]()
@@ -180,14 +185,14 @@ class IndexAction extends EntityAction[Clazz] with ProjectSupport {
     put("titlesMap", titlesMap)
 
     val itemData = "title.name,name,department.name,count(*)".split(",")
-    itemData(0) = s"t.${itemData(0)}"
-    itemData(1) = s"t.user.${itemData(1)}"
-    itemData(2) = s"t.user.${itemData(2)}"
+    itemData(0) = s"t.staff.${itemData(0)}"
+    itemData(1) = s"t.${itemData(1)}"
+    itemData(2) = s"t.${itemData(2)}"
     val query2 = OqlBuilder.from(classOf[Clazz].getName, "c")
     addCondition(query2)
     query2.join("c.teachers", "t")
-    query2.groupBy("t.title.id, t.title.name, t.id, t.user.name, t.user.department.id, t.user.department.name")
-    query2.orderBy("t.title.name, count(*) desc")
+    query2.groupBy("t.staff.title.id, t.staff.title.name, t.id, t.name, t.department.id, t.department.name")
+    query2.orderBy("t.staff.title.name, count(*) desc")
     query2.select(itemData.mkString(","))
     put("titles", entityDao.search(query2))
     forward()

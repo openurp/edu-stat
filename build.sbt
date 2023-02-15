@@ -24,9 +24,9 @@ ThisBuild / developers := List(
 ThisBuild / description := "OpenURP Edu Stat"
 ThisBuild / homepage := Some(url("http://openurp.github.io/edu-stat/index.html"))
 
-val apiVer = "0.26.0"
-val starterVer = "0.0.21"
-val baseVer = "0.1.30"
+val apiVer = "0.31.0.Beta2"
+val starterVer = "0.2.10"
+val baseVer = "0.3.3"
 val openurp_edu_api = "org.openurp.edu" % "openurp-edu-api" % apiVer
 val openurp_stater_web = "org.openurp.starter" % "openurp-starter-web" % starterVer
 val openurp_base_tag = "org.openurp.base" % "openurp-base-tag" % baseVer
@@ -37,6 +37,5 @@ lazy val root = (project in file("."))
     name := "openurp-edu-stat-webapp",
     common,
     libraryDependencies ++= Seq(openurp_stater_web,openurp_base_tag),
-    libraryDependencies ++= Seq(openurp_edu_api,beangle_ems_app),
-    libraryDependencies ++= Seq(Sas.Tomcat % "test")
+    libraryDependencies ++= Seq(openurp_edu_api,beangle_ems_app)
   )

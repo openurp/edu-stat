@@ -13,8 +13,8 @@
         [@b.col property="session.time.beginAt" title="开始时间" width="9%"]
            ${lesson.session.time.beginAt}~${lesson.session.time.endAt}
         [/@]
-        [@b.col property="teacher.user.code" title="教师工号" width="8%"/]
-        [@b.col property="teacher.user.name" title="教师姓名" width="10%"/]
+        [@b.col property="teacher.code" title="教师工号" width="8%"/]
+        [@b.col property="teacher.name" title="教师姓名" width="10%"/]
         [@b.col property="session.clazz.crn" title="课程序号" width="5%"/]
         [@b.col property="session.clazz.course.name" title="课程名称" width="20%"/]
         [@b.col property="session.clazz.enrollment.actual" title="人数" width="7%"/]

@@ -18,7 +18,7 @@
 package org.openurp.edu.stat.web.action.clazz
 
 import org.beangle.commons.lang.time.WeekTime
-import org.beangle.data.dao.OqlBuilder
+import org.beangle.data.dao.{EntityDao, OqlBuilder}
 import org.beangle.data.transfer.excel.ExcelItemWriter
 import org.beangle.data.transfer.exporter.ExportContext
 import org.beangle.web.action.annotation.{mapping, param}
@@ -28,20 +28,20 @@ import org.openurp.base.edu.model.Teacher
 import org.openurp.base.model.{Project, Semester}
 import org.openurp.edu.clazz.model.{Clazz, Session}
 import org.openurp.edu.stat.web.helper.BirthdayLesson
-import org.openurp.starter.edu.helper.ProjectSupport
+import org.openurp.starter.web.support.ProjectSupport
 
 import java.time.LocalDate
 import scala.collection.mutable
 
 class BirthdayAction extends EntityAction[Clazz] with ProjectSupport {
 
+  var entityDao: EntityDao = _
+
   def index(): View = {
-    put("project", getProject)
-    val semester = getId("semester") match {
-      case Some(sid) => entityDao.get(classOf[Semester], sid.toInt)
-      case None => getCurrentSemester
-    }
-    put("currentSemester", semester)
+    given project: Project = getProject
+
+    put("project", project)
+    put("currentSemester", getSemester)
     forward()
   }
 
@@ -72,7 +72,7 @@ class BirthdayAction extends EntityAction[Clazz] with ProjectSupport {
       val campuses = l.session.rooms.map(_.campus.name).toSet.mkString(",")
       val rooms = l.session.rooms.map(_.name).toSet.mkString(",")
       val clazz = l.session.clazz
-      val data = Array(idx, l.day, time, l.teacher.user.code, l.teacher.user.name, clazz.crn, clazz.course.name, clazz.enrollment.actual, campuses, rooms)
+      val data = Array(idx, l.day, time, l.teacher.code, l.teacher.name, clazz.crn, clazz.course.name, clazz.enrollment.actual, campuses, rooms)
       writer.write(data)
       idx += 1
     }
@@ -85,7 +85,7 @@ class BirthdayAction extends EntityAction[Clazz] with ProjectSupport {
     query.join("cl.teachers", "t")
     query.where("cl.project=:project", p)
     query.where("cl.semester=:semester", semester)
-    query.where("t.person is not null")
+    query.where("t.staff.birthday is not null")
     query.select("distinct t")
     val teachers = entityDao.search(query).toSet
 
@@ -97,7 +97,7 @@ class BirthdayAction extends EntityAction[Clazz] with ProjectSupport {
     teachers foreach { t =>
       teacherSessions.get(t) match {
         case Some(sessionList) =>
-          val birthday = t.person.get.birthday
+          val birthday = t.staff.birthday.get
           val days = new mutable.ArrayBuffer[LocalDate]
           val day1st = birthday.withYear(semester.beginOn.getYear)
           val day2nd = birthday.withYear(semester.endOn.getYear)

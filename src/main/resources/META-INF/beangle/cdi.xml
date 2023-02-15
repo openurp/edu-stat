@@ -2,6 +2,6 @@
 <cdi>
   <container>
     <module class="org.openurp.edu.stat.web.action.clazz.DefaultModule"/>
-    <module class="org.openurp.starter.edu.action.ProjectModule" />
+    <module class="org.openurp.starter.web.ProjectModule" />
   </container>
 </cdi>

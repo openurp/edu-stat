@@ -28,7 +28,7 @@ case class BirthdayLesson(day: LocalDate, teacher: Teacher, session: Session) ex
     if (r == 0) {
       r = session.time.beginAt.compare(that.session.time.beginAt)
       if (r == 0) {
-        r = teacher.user.name.compareTo(that.teacher.user.name)
+        r = teacher.name.compareTo(that.teacher.name)
       }
     }
     r
