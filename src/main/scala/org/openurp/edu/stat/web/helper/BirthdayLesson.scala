@@ -18,15 +18,15 @@
 package org.openurp.edu.stat.web.helper
 
 import org.openurp.base.edu.model.Teacher
-import org.openurp.edu.clazz.model.Session
+import org.openurp.edu.clazz.model.ClazzActivity
 
 import java.time.LocalDate
 
-case class BirthdayLesson(day: LocalDate, teacher: Teacher, session: Session) extends Ordered[BirthdayLesson] {
+case class BirthdayLesson(day: LocalDate, teacher: Teacher, activity: ClazzActivity) extends Ordered[BirthdayLesson] {
   override def compare(that: BirthdayLesson): Int = {
     var r = day.compareTo(that.day)
     if (r == 0) {
-      r = session.time.beginAt.compare(that.session.time.beginAt)
+      r = activity.time.beginAt.compare(that.activity.time.beginAt)
       if (r == 0) {
         r = teacher.name.compareTo(that.teacher.name)
       }

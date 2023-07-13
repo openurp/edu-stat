@@ -19,6 +19,7 @@ package org.openurp.edu.stat.web.action.clazz
 
 import org.beangle.data.dao.{EntityDao, OqlBuilder}
 import org.beangle.data.model.Entity
+import org.beangle.web.action.support.ActionSupport
 import org.beangle.web.action.view.View
 import org.beangle.webmvc.support.action.EntityAction
 import org.openurp.base.edu.model.Teacher
@@ -29,7 +30,7 @@ import org.openurp.starter.web.support.ProjectSupport
 
 import scala.collection.mutable.Map
 
-class IndexAction extends EntityAction[Clazz] with ProjectSupport {
+class IndexAction extends ActionSupport, EntityAction[Clazz], ProjectSupport {
 
   var entityDao: EntityDao = _
 
@@ -52,7 +53,7 @@ class IndexAction extends EntityAction[Clazz] with ProjectSupport {
   }
 
   private def addCondition[T <: Entity[_]](query: OqlBuilder[T]): Unit = {
-    if (query.alias == "c") query.where("c.enrollment.actual>0")
+    if (query.alias == "c") query.where("c.enrollment.stdCount>0")
     val semesterId = getId("semester", classOf[Int])
 
     semesterId foreach { s =>
@@ -106,18 +107,18 @@ class IndexAction extends EntityAction[Clazz] with ProjectSupport {
 
   def enrollment(): View = {
     val ranges = List((1, 30), (31, 60), (61, 100), (101, 150), (151, 5000))
-    val semesterId = intId("semester")
+    val semesterId = getIntId("semester")
     val datas = ranges.map { r =>
       val query = OqlBuilder.from[Long](classOf[Clazz].getName, "c")
       query.where("c.semester.id=:semesterId", semesterId)
-      query.where("c.enrollment.actual between :from and :to", r._1, r._2)
+      query.where("c.enrollment.stdCount between :from and :to", r._1, r._2)
       query.select("count(*)")
       Array(r._1 + "~" + r._2, entityDao.search(query).head)
     }
     put("datas", datas)
     val query2 = OqlBuilder.from(classOf[Clazz].getName, "c")
     addCondition(query2)
-    query2.select("max(c.enrollment.actual),min(c.enrollment.actual)")
+    query2.select("max(c.enrollment.stdCount),min(c.enrollment.stdCount)")
     val rs = entityDao.search(query2)
     put("items", rs)
     forward()
@@ -145,7 +146,7 @@ class IndexAction extends EntityAction[Clazz] with ProjectSupport {
       case Some(value) => {
         val semester = entityDao.get(classOf[Semester], value)
         query.where(s"exists (from ${classOf[Clazz].getName} c where c.semester = :semester" +
-          s" and c.enrollment.actual >0 and exists (from c.teachers ct where ct = t))", semester)
+          s" and c.enrollment.stdCount >0 and exists (from c.teachers ct where ct = t))", semester)
         put("semester", semester)
       }
       case None => query.where(s"exists (from ${classOf[Clazz].getName} c where exists (from c.teachers ct where ct = t))")
@@ -178,7 +179,7 @@ class IndexAction extends EntityAction[Clazz] with ProjectSupport {
   def topN(): View = {
     val query1 = OqlBuilder.from[ProfessionalTitle](classOf[ProfessionalTitle].getName, "pt")
     query1.where(s"exists (from ${classOf[Teacher].getName} t where t.staff.title = pt and " +
-      s"exists (from ${classOf[Clazz].getName} c where c.enrollment.actual>0 and exists (from c.teachers ct where ct = t)))")
+      s"exists (from ${classOf[Clazz].getName} c where c.enrollment.stdCount>0 and exists (from c.teachers ct where ct = t)))")
     val titles = entityDao.search(query1)
     val titlesMap = Map[Int, ProfessionalTitle]()
     titles.foreach(title => titlesMap(title.id) = title)

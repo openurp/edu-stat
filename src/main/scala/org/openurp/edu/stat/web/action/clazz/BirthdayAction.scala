@@ -22,18 +22,19 @@ import org.beangle.data.dao.{EntityDao, OqlBuilder}
 import org.beangle.data.transfer.excel.ExcelItemWriter
 import org.beangle.data.transfer.exporter.ExportContext
 import org.beangle.web.action.annotation.{mapping, param}
+import org.beangle.web.action.support.ActionSupport
 import org.beangle.web.action.view.View
 import org.beangle.webmvc.support.action.EntityAction
 import org.openurp.base.edu.model.Teacher
 import org.openurp.base.model.{Project, Semester}
-import org.openurp.edu.clazz.model.{Clazz, Session}
+import org.openurp.edu.clazz.model.{Clazz, ClazzActivity}
 import org.openurp.edu.stat.web.helper.BirthdayLesson
 import org.openurp.starter.web.support.ProjectSupport
 
 import java.time.LocalDate
 import scala.collection.mutable
 
-class BirthdayAction extends EntityAction[Clazz] with ProjectSupport {
+class BirthdayAction extends ActionSupport, EntityAction[Clazz], ProjectSupport {
 
   var entityDao: EntityDao = _
 
@@ -68,11 +69,11 @@ class BirthdayAction extends EntityAction[Clazz] with ProjectSupport {
     writer.writeTitle("教师生日上课情况", Array("序号", "日期", "开始时间", "教师工号", "教师姓名", "课程序号", "课程名称", "人数", "校区", "上课教室"))
     var idx = 1
     lessons foreach { l =>
-      val time = l.session.time.beginAt.toString() + "~" + l.session.time.endAt.toString()
-      val campuses = l.session.rooms.map(_.campus.name).toSet.mkString(",")
-      val rooms = l.session.rooms.map(_.name).toSet.mkString(",")
-      val clazz = l.session.clazz
-      val data = Array(idx, l.day, time, l.teacher.code, l.teacher.name, clazz.crn, clazz.course.name, clazz.enrollment.actual, campuses, rooms)
+      val time = l.activity.time.beginAt.toString() + "~" + l.activity.time.endAt.toString()
+      val campuses = l.activity.rooms.map(_.campus.name).toSet.mkString(",")
+      val rooms = l.activity.rooms.map(_.name).toSet.mkString(",")
+      val clazz = l.activity.clazz
+      val data = Array(idx, l.day, time, l.teacher.code, l.teacher.name, clazz.crn, clazz.course.name, clazz.enrollment.stdCount, campuses, rooms)
       writer.write(data)
       idx += 1
     }
@@ -90,13 +91,13 @@ class BirthdayAction extends EntityAction[Clazz] with ProjectSupport {
     val teachers = entityDao.search(query).toSet
 
     val lessons = new mutable.ArrayBuffer[BirthdayLesson]
-    val sessionQuery = OqlBuilder.from(classOf[Session], "s")
-    sessionQuery.where("s.clazz.project=:project and s.clazz.semester=:semester", p, semester)
-    val sessions = entityDao.search(sessionQuery)
-    val teacherSessions = sessions.map(x => x.teachers.map(t => t -> x)).flatten.groupMap(_._1)(_._2)
+    val activityQuery = OqlBuilder.from(classOf[ClazzActivity], "s")
+    activityQuery.where("s.clazz.project=:project and s.clazz.semester=:semester", p, semester)
+    val activities = entityDao.search(activityQuery)
+    val teacherActivities = activities.flatMap(x => x.teachers.map(t => t -> x)).groupMap(_._1)(_._2)
     teachers foreach { t =>
-      teacherSessions.get(t) match {
-        case Some(sessionList) =>
+      teacherActivities.get(t) match {
+        case Some(activityList) =>
           val birthday = t.staff.birthday.get
           val days = new mutable.ArrayBuffer[LocalDate]
           val day1st = birthday.withYear(semester.beginOn.getYear)
@@ -107,11 +108,11 @@ class BirthdayAction extends EntityAction[Clazz] with ProjectSupport {
 
           days foreach { day =>
             val wt = WeekTime.of(day)
-            val daySessions = sessionList.filter { s =>
+            val dayActivities = activityList.filter { s =>
               s.time.startOn == wt.startOn && s.time.weekstate.isOverlap(wt.weekstate)
             }
-            daySessions foreach { session =>
-              lessons += BirthdayLesson(day, t, session)
+            dayActivities foreach { a =>
+              lessons += BirthdayLesson(day, t, a)
             }
           }
         case None =>
