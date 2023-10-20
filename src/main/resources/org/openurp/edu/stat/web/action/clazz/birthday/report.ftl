@@ -6,7 +6,7 @@
   [@b.a href="!excel?semesterId="+semester.id target="_blank" class="notprint"]<i class="fas fa-file-excel"></i>导出[/@]
 [/#if]
 </p>
-[@b.grid items=lessons var="lesson" sortable="false" style="border:0.5px solid #006CB2"]
+[@b.grid items=lessons var="lesson" sortable="false" class="border-1px border-blue"]
     [@b.row]
         [@b.col title="序号" width="5%"]${lesson_index+1}[/@]
         [@b.col property="day" title="日期" width="10%"]${lesson.day}[/@]
@@ -14,8 +14,8 @@
            ${lesson.activity.time.beginAt}~${lesson.activity.time.endAt}
         [/@]
         [@b.col property="teacher.code" title="教师工号" width="8%"/]
-        [@b.col property="teacher.name" title="教师姓名" width="10%"/]
-        [@b.col property="activity.clazz.crn" title="课程序号" width="5%"/]
+        [@b.col property="teacher.name" title="教师姓名" width="9%"/]
+        [@b.col property="activity.clazz.crn" title="课程序号" width="6%"/]
         [@b.col property="activity.clazz.course.name" title="课程名称" width="20%"/]
         [@b.col property="activity.clazz.enrollment.stdCount" title="人数" width="7%"/]
         [@b.col title="校区" width="9%"]
