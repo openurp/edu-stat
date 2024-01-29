@@ -24,9 +24,7 @@ object DefaultModule extends BindModule {
   override protected def binding(): Unit = {
     bind(classOf[IndexAction])
     bind(classOf[BirthdayAction])
+    bind(classOf[PatrolAction])
   }
 
-  def main(args: Array[String]): Unit = {
-    println(classOf[org.beangle.web.servlet.init.BootstrapListener])
-  }
 }

@@ -17,15 +17,16 @@
 
 package org.openurp.edu.stat.web.action.clazz
 
+import org.beangle.commons.collection.Collections
 import org.beangle.commons.lang.time.WeekTime
 import org.beangle.data.dao.{EntityDao, OqlBuilder}
-import org.beangle.data.transfer.excel.ExcelItemWriter
 import org.beangle.data.transfer.exporter.ExportContext
 import org.beangle.web.action.annotation.{mapping, param}
 import org.beangle.web.action.support.ActionSupport
 import org.beangle.web.action.view.View
+import org.beangle.web.servlet.util.RequestUtils
 import org.beangle.webmvc.support.action.EntityAction
-import org.openurp.base.edu.model.Teacher
+import org.openurp.base.hr.model.Teacher
 import org.openurp.base.model.{Project, Semester}
 import org.openurp.edu.clazz.model.{Clazz, ClazzActivity}
 import org.openurp.edu.stat.web.helper.BirthdayLesson
@@ -42,7 +43,7 @@ class BirthdayAction extends ActionSupport, EntityAction[Clazz], ProjectSupport 
     given project: Project = getProject
 
     put("project", project)
-    put("currentSemester", getSemester)
+    put("semester", getSemester)
     forward()
   }
 
@@ -61,23 +62,21 @@ class BirthdayAction extends ActionSupport, EntityAction[Clazz], ProjectSupport 
     val semester = entityDao.get(classOf[Semester], semesterId.toInt)
     val p = getProject
     val lessons = stat(p, semester)
-    val cxt = new ExportContext
-    val res = response
-    res.setContentType("application/vnd.ms-excel;charset=GBK")
-    res.setHeader("Content-Disposition", s"attachment;filename=${semester.code}_birthday_lesson.xls")
-    val writer = new ExcelItemWriter(cxt, response.getOutputStream)
-    writer.writeTitle("教师生日上课情况", Array("序号", "日期", "开始时间", "教师工号", "教师姓名", "课程序号", "课程名称", "人数", "校区", "上课教室"))
     var idx = 1
+    val datas = Collections.newBuffer[Any]
     lessons foreach { l =>
       val time = l.activity.time.beginAt.toString() + "~" + l.activity.time.endAt.toString()
       val campuses = l.activity.rooms.map(_.campus.name).toSet.mkString(",")
       val rooms = l.activity.rooms.map(_.name).toSet.mkString(",")
       val clazz = l.activity.clazz
       val data = Array(idx, l.day, time, l.teacher.code, l.teacher.name, clazz.crn, clazz.course.name, clazz.enrollment.stdCount, campuses, rooms)
-      writer.write(data)
+      datas.addOne(data)
       idx += 1
     }
-    writer.close()
+
+    RequestUtils.setContentDisposition(response, s"${semester.code}_教师生日授课.xlsx")
+    val cxt = ExportContext.excel(Some("教师生日上课情况"), List("序号", "日   期", "开始时间", "教师工号", "教师姓名", "课程序号", "课程名称", "人数", "校区", "上课教室"))
+    cxt.setItems(datas).writeTo(response.getOutputStream)
     null
   }
 

@@ -1,6 +1,4 @@
 [@b.head/]
-[@base.semester_bar value=currentSemester]
-  教师生日上课情况
-[/@]
-[@b.div href="!report?semesterId="+currentSemester.id/]
+[@base.semester_bar value=semester/]
+[@b.div href="!report?semesterId="+semester.id/]
 [@b.foot/]

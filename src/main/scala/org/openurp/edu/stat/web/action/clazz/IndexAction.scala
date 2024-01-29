@@ -22,7 +22,7 @@ import org.beangle.data.model.Entity
 import org.beangle.web.action.support.ActionSupport
 import org.beangle.web.action.view.View
 import org.beangle.webmvc.support.action.EntityAction
-import org.openurp.base.edu.model.Teacher
+import org.openurp.base.hr.model.Teacher
 import org.openurp.base.model.{Project, Semester}
 import org.openurp.code.job.model.ProfessionalTitle
 import org.openurp.edu.clazz.model.{Clazz, CourseTaker}
@@ -38,17 +38,7 @@ class IndexAction extends ActionSupport, EntityAction[Clazz], ProjectSupport {
     given project: Project = getProject
 
     put("project", project)
-    put("currentSemester", getSemester)
-    forward()
-  }
-
-  def display(): View = {
-    val semesterId = getInt("semester.id")
-    semesterId match {
-      case Some(value) =>
-        put("semester", entityDao.get(classOf[Semester], value))
-      case None =>
-    }
+    put("semester", getSemester)
     forward()
   }
 

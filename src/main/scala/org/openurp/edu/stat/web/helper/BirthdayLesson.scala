@@ -17,7 +17,7 @@
 
 package org.openurp.edu.stat.web.helper
 
-import org.openurp.base.edu.model.Teacher
+import org.openurp.base.hr.model.Teacher
 import org.openurp.edu.clazz.model.ClazzActivity
 
 import java.time.LocalDate
