@@ -21,7 +21,7 @@
      ${weekdays[activity.time.weekday.id?string]} ${activity.beginUnit}~${activity.endUnit}
     [/@]
     [@b.col title="教室" width="15%"]
-      [#list activity.rooms as r]${r.name}(${r.devices?size})[#sep]&nbsp;[/#list]
+      [#list activity.rooms as r]${r.name}[#assign devices=r.activeDevices(semester)][#if devices?size>0](${devices?size})[/#if][#sep]&nbsp;[/#list]
     [/@]
     [@b.col property="clazz.enrollment.stdCount" title="人数" width="5%" /]
   [/@]

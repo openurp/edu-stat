@@ -20,7 +20,7 @@ package org.openurp.edu.stat.web.action.clazz
 import org.beangle.commons.collection.Collections
 import org.beangle.commons.lang.time.WeekTime
 import org.beangle.data.dao.{EntityDao, OqlBuilder}
-import org.beangle.data.transfer.exporter.ExportContext
+import org.beangle.doc.transfer.exporter.ExportContext
 import org.beangle.web.action.annotation.{mapping, param}
 import org.beangle.web.action.support.ActionSupport
 import org.beangle.web.action.view.View

@@ -23,7 +23,7 @@ import org.beangle.commons.io.Files
 import org.beangle.commons.lang.time.{WeekDay, WeekTime, Weeks}
 import org.beangle.commons.lang.{Strings, SystemInfo}
 import org.beangle.data.dao.{EntityDao, OqlBuilder}
-import org.beangle.data.transfer.exporter.ExportContext
+import org.beangle.doc.transfer.exporter.ExportContext
 import org.beangle.template.freemarker.Configurer
 import org.beangle.web.action.support.ActionSupport
 import org.beangle.web.action.view.{Stream, View}
@@ -68,6 +68,7 @@ class PatrolAction extends ActionSupport, EntityAction[Clazz], ProjectSupport {
     val beginUnit = getInt("beginUnit").get
     val query = buildQuery(weekday, beginUnit, getBoolean("monitor"))
     put("activities", entityDao.search(query))
+    put("semester", getSemester)
     forward()
   }
 
@@ -85,7 +86,9 @@ class PatrolAction extends ActionSupport, EntityAction[Clazz], ProjectSupport {
 
     monitor foreach { b =>
       val prefix = if (b) " " else " not "
-      query.where(prefix + "exists(from activity.rooms as r join r.devices as d where d.deviceType.name like :monitor)", "%摄像%")
+      query.where(prefix + "exists(from activity.rooms as r join r.devices as d " +
+        "where :beginOn between d.beginOn and coalesce(d.endOn,current_date) and d.deviceType.name like :monitor)",
+        semester.beginOn, "%摄像%")
     }
     getInt("building.id") match
       case Some(id) =>
@@ -100,10 +103,12 @@ class PatrolAction extends ActionSupport, EntityAction[Clazz], ProjectSupport {
   def devices(): View = {
     given project: Project = getProject
 
+    val semester = getSemester
     val weekday = WeekDay.of(getInt("weekday").get)
     val beginUnit = getInt("beginUnit").get
     val activities = entityDao.search(buildQuery(weekday, beginUnit, Some(true)))
-    val devices = activities.flatten(x => x.rooms.flatten(r => r.devices)).toSet
+    val devices = activities.flatten(x => x.rooms.flatten(r => r.activeDevices(semester)))
+      .distinct.sortBy(_.room.map(_.name).getOrElse(""))
     put("weekday", weekday)
     put("beginUnit", beginUnit)
     put("devices", devices)
@@ -124,7 +129,8 @@ class PatrolAction extends ActionSupport, EntityAction[Clazz], ProjectSupport {
     val weekdayNames = Array("", "周一", "周二", "周三", "周四", "周五", "周六", "周日")
     for (weekday <- WeekDay.values; unit <- setting.units) {
       val activities = entityDao.search(buildQuery(weekday, unit.indexno, Some(true)))
-      val devices = activities.flatten(x => x.rooms.flatten(r => r.devices)).toSet
+      val devices = activities.flatten(x => x.rooms.flatten(r => r.activeDevices(semester)))
+        .distinct.sortBy(_.room.map(_.name).getOrElse(""))
       val fileName = weekday.id + "_" + unit.indexno + ".iniDataFile"
       val file = new File(dir.getAbsolutePath + "/" + fileName)
       if (devices.nonEmpty) {
