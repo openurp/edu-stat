@@ -1,6 +1,6 @@
 [@b.head/]
 <div class="container">
-<p style="text-align:center">${semester.schoolYear}学期${semester.name}学期 教师生日上课情况
+<p style="text-align:center;margin:0px">${semester.schoolYear}学期${semester.name}学期 教师生日上课情况
 [#if (request.getHeader('x-requested-with')??) || Parameters['x-requested-with']??]
   [@b.a href="!report?semesterId="+semester.id target="_blank" class="notprint"]<i class="fas fa-print"></i>打印[/@]&nbsp;&nbsp;
   [@b.a href="!excel?semesterId="+semester.id target="_blank" class="notprint"]<i class="fas fa-file-excel"></i>导出[/@]
