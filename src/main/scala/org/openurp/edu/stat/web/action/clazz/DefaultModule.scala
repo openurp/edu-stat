@@ -17,7 +17,7 @@
 
 package org.openurp.edu.stat.web.action.clazz
 
-import org.beangle.cdi.bind.BindModule
+import org.beangle.commons.cdi.BindModule
 
 object DefaultModule extends BindModule {
 

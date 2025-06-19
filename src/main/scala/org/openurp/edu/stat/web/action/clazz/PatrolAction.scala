@@ -24,9 +24,9 @@ import org.beangle.commons.lang.time.{WeekDay, WeekTime, Weeks}
 import org.beangle.commons.lang.{Strings, SystemInfo}
 import org.beangle.data.dao.{EntityDao, OqlBuilder}
 import org.beangle.doc.transfer.exporter.ExportContext
-import org.beangle.template.freemarker.Configurer
-import org.beangle.web.action.support.ActionSupport
-import org.beangle.web.action.view.{Stream, View}
+import org.beangle.template.freemarker.Configurator
+import org.beangle.webmvc.support.ActionSupport
+import org.beangle.webmvc.view.{Stream, View}
 import org.beangle.web.servlet.util.RequestUtils
 import org.beangle.webmvc.support.action.EntityAction
 import org.openurp.base.edu.model.CourseUnit
@@ -46,7 +46,7 @@ class PatrolAction extends ActionSupport, EntityAction[Clazz], ProjectSupport {
 
   var timeSettingService: TimeSettingService = _
 
-  var freemarkerConfigurer: Configurer = _
+  var freemarkerConfigurer: Configurator = _
 
   def index(): View = {
     given project: Project = getProject
