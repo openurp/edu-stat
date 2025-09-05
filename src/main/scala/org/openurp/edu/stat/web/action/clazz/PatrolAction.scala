@@ -171,7 +171,7 @@ class PatrolAction extends ActionSupport, EntityAction[Clazz], ProjectSupport {
     monitorActivities foreach { activity =>
       val data = Array.ofDim[Any](15)
       val clazz = activity.clazz
-      data(0) = semester.schoolYear.substring(0, 4)
+      data(0) = semester.year.startYear
       data(1) = semester.name
       data(2) = clazz.teachDepart.name
       data(3) = clazz.course.code

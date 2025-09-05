@@ -54,9 +54,9 @@ class IndexAction extends ActionSupport, EntityAction[Clazz], ProjectSupport {
   def semester(): View = {
     val query = OqlBuilder.from(classOf[Clazz].getName, "c")
     addCondition(query)
-    query.groupBy("c.semester.id,c.semester.schoolYear,c.semester.name")
-    query.orderBy("c.semester.schoolYear desc,c.semester.name desc")
-    query.select("c.semester.schoolYear,c.semester.name,count(*),count(distinct c.course.id)")
+    query.groupBy("c.semester.id,c.semester.year.name,c.semester.name")
+    query.orderBy("c.semester.year.name desc,c.semester.name desc")
+    query.select("c.semester.year.name,c.semester.name,count(*),count(distinct c.course.id)")
     put("semesters", entityDao.search(query))
 
     if (getId("semester", classOf[Int]).nonEmpty) {
